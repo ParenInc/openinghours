@@ -1,6 +1,3 @@
-//go:build !integration && !endtoend
-// +build !integration,!endtoend
-
 package openinghours_test
 
 import (
