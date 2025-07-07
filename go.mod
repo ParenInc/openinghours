@@ -1,4 +1,4 @@
-module github.com/ParenInc/openinghours
+module github.com/pareninc/openinghours
 
 go 1.24
 

@@ -1,8 +1,7 @@
-package openinghours_test
+package openinghours
 
 import (
 	"fmt"
-	"github.com/ParenInc/openinghours"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,90 +9,90 @@ import (
 
 func TestOpeningHoursString(t *testing.T) {
 	tests := map[string]struct {
-		openingHours   openinghours.OpeningHours
+		openingHours   OpeningHours
 		expectedResult string
 	}{
 		"when monday": {
-			openingHours: openinghours.OpeningHours{
-				Open:  &openinghours.TimeInWeek{Weekday: 1, MinutesSinceMidnight: 480},
-				Close: &openinghours.TimeInWeek{Weekday: 1, MinutesSinceMidnight: 960},
+			openingHours: OpeningHours{
+				Open:  &TimeInWeek{Weekday: 1, MinutesSinceMidnight: 480},
+				Close: &TimeInWeek{Weekday: 1, MinutesSinceMidnight: 960},
 			},
 			expectedResult: "W1T08:00:00/W1T16:00:00",
 		},
 		"when tuesday": {
-			openingHours: openinghours.OpeningHours{
-				Open:  &openinghours.TimeInWeek{Weekday: 2, MinutesSinceMidnight: 360},
-				Close: &openinghours.TimeInWeek{Weekday: 2, MinutesSinceMidnight: 1200},
+			openingHours: OpeningHours{
+				Open:  &TimeInWeek{Weekday: 2, MinutesSinceMidnight: 360},
+				Close: &TimeInWeek{Weekday: 2, MinutesSinceMidnight: 1200},
 			},
 			expectedResult: "W2T06:00:00/W2T20:00:00",
 		},
 		"when wednesday": {
-			openingHours: openinghours.OpeningHours{
-				Open:  &openinghours.TimeInWeek{Weekday: 3, MinutesSinceMidnight: 480},
-				Close: &openinghours.TimeInWeek{Weekday: 3, MinutesSinceMidnight: 960},
+			openingHours: OpeningHours{
+				Open:  &TimeInWeek{Weekday: 3, MinutesSinceMidnight: 480},
+				Close: &TimeInWeek{Weekday: 3, MinutesSinceMidnight: 960},
 			},
 			expectedResult: "W3T08:00:00/W3T16:00:00",
 		},
 		"when thursday": {
-			openingHours: openinghours.OpeningHours{
-				Open:  &openinghours.TimeInWeek{Weekday: 4, MinutesSinceMidnight: 490},
-				Close: &openinghours.TimeInWeek{Weekday: 4, MinutesSinceMidnight: 975},
+			openingHours: OpeningHours{
+				Open:  &TimeInWeek{Weekday: 4, MinutesSinceMidnight: 490},
+				Close: &TimeInWeek{Weekday: 4, MinutesSinceMidnight: 975},
 			},
 			expectedResult: "W4T08:10:00/W4T16:15:00",
 		},
 		"when friday": {
-			openingHours: openinghours.OpeningHours{
-				Open:  &openinghours.TimeInWeek{Weekday: 5, MinutesSinceMidnight: 630},
-				Close: &openinghours.TimeInWeek{Weekday: 5, MinutesSinceMidnight: 780},
+			openingHours: OpeningHours{
+				Open:  &TimeInWeek{Weekday: 5, MinutesSinceMidnight: 630},
+				Close: &TimeInWeek{Weekday: 5, MinutesSinceMidnight: 780},
 			},
 			expectedResult: "W5T10:30:00/W5T13:00:00",
 		},
 		"when saturday": {
-			openingHours: openinghours.OpeningHours{
-				Open:  &openinghours.TimeInWeek{Weekday: 6, MinutesSinceMidnight: 480},
-				Close: &openinghours.TimeInWeek{Weekday: 6, MinutesSinceMidnight: 960},
+			openingHours: OpeningHours{
+				Open:  &TimeInWeek{Weekday: 6, MinutesSinceMidnight: 480},
+				Close: &TimeInWeek{Weekday: 6, MinutesSinceMidnight: 960},
 			},
 			expectedResult: "W6T08:00:00/W6T16:00:00",
 		},
 		"when sunday": {
-			openingHours: openinghours.OpeningHours{
-				Open:  &openinghours.TimeInWeek{Weekday: 7, MinutesSinceMidnight: 480},
-				Close: &openinghours.TimeInWeek{Weekday: 7, MinutesSinceMidnight: 960},
+			openingHours: OpeningHours{
+				Open:  &TimeInWeek{Weekday: 7, MinutesSinceMidnight: 480},
+				Close: &TimeInWeek{Weekday: 7, MinutesSinceMidnight: 960},
 			},
 			expectedResult: "W7T08:00:00/W7T16:00:00",
 		},
 		"when closing time is during the next day": {
-			openingHours: openinghours.OpeningHours{
-				Open:  &openinghours.TimeInWeek{Weekday: 2, MinutesSinceMidnight: 1200},
-				Close: &openinghours.TimeInWeek{Weekday: 3, MinutesSinceMidnight: 240},
+			openingHours: OpeningHours{
+				Open:  &TimeInWeek{Weekday: 2, MinutesSinceMidnight: 1200},
+				Close: &TimeInWeek{Weekday: 3, MinutesSinceMidnight: 240},
 			},
 			expectedResult: "W2T20:00:00/W3T04:00:00",
 		},
 		"when opening hours not specified": {
-			openingHours: openinghours.OpeningHours{
+			openingHours: OpeningHours{
 				Open:  nil,
-				Close: &openinghours.TimeInWeek{Weekday: 1, MinutesSinceMidnight: 960},
+				Close: &TimeInWeek{Weekday: 1, MinutesSinceMidnight: 960},
 			},
 			expectedResult: "/W1T16:00:00",
 		},
 		"when closing hours not specified": {
-			openingHours: openinghours.OpeningHours{
-				Open:  &openinghours.TimeInWeek{Weekday: 1, MinutesSinceMidnight: 480},
+			openingHours: OpeningHours{
+				Open:  &TimeInWeek{Weekday: 1, MinutesSinceMidnight: 480},
 				Close: nil,
 			},
 			expectedResult: "W1T08:00:00/",
 		},
 		"when opening and closing hours not specified": {
-			openingHours: openinghours.OpeningHours{
+			openingHours: OpeningHours{
 				Open:  nil,
 				Close: nil,
 			},
 			expectedResult: "/",
 		},
 		"when weekday invalid": {
-			openingHours: openinghours.OpeningHours{
-				Open:  &openinghours.TimeInWeek{Weekday: 10, MinutesSinceMidnight: 480},
-				Close: &openinghours.TimeInWeek{Weekday: 1, MinutesSinceMidnight: 960},
+			openingHours: OpeningHours{
+				Open:  &TimeInWeek{Weekday: 10, MinutesSinceMidnight: 480},
+				Close: &TimeInWeek{Weekday: 1, MinutesSinceMidnight: 960},
 			},
 			expectedResult: "W10T08:00:00/W1T16:00:00",
 		},
@@ -114,104 +113,104 @@ func TestOpeningHoursString(t *testing.T) {
 func TestParseOpeningHours(t *testing.T) {
 	tests := map[string]struct {
 		openingHours   string
-		expectedResult []openinghours.OpeningHours
+		expectedResult []OpeningHours
 		expectedError  error
 	}{
 		"when monday": {
 			openingHours: "W1T08:00:00/W1T16:00:00",
-			expectedResult: []openinghours.OpeningHours{
+			expectedResult: []OpeningHours{
 				{
-					Open:  &openinghours.TimeInWeek{Weekday: 1, MinutesSinceMidnight: 480},
-					Close: &openinghours.TimeInWeek{Weekday: 1, MinutesSinceMidnight: 960},
+					Open:  &TimeInWeek{Weekday: 1, MinutesSinceMidnight: 480},
+					Close: &TimeInWeek{Weekday: 1, MinutesSinceMidnight: 960},
 				},
 			},
 			expectedError: nil,
 		},
 		"when tuesday": {
 			openingHours: "W2T06:00:00/W2T20:00:00",
-			expectedResult: []openinghours.OpeningHours{
+			expectedResult: []OpeningHours{
 				{
-					Open:  &openinghours.TimeInWeek{Weekday: 2, MinutesSinceMidnight: 360},
-					Close: &openinghours.TimeInWeek{Weekday: 2, MinutesSinceMidnight: 1200},
+					Open:  &TimeInWeek{Weekday: 2, MinutesSinceMidnight: 360},
+					Close: &TimeInWeek{Weekday: 2, MinutesSinceMidnight: 1200},
 				},
 			},
 			expectedError: nil,
 		},
 		"when wednesday": {
 			openingHours: "W3T08:00:00/W3T16:00:00",
-			expectedResult: []openinghours.OpeningHours{
+			expectedResult: []OpeningHours{
 				{
-					Open:  &openinghours.TimeInWeek{Weekday: 3, MinutesSinceMidnight: 480},
-					Close: &openinghours.TimeInWeek{Weekday: 3, MinutesSinceMidnight: 960},
+					Open:  &TimeInWeek{Weekday: 3, MinutesSinceMidnight: 480},
+					Close: &TimeInWeek{Weekday: 3, MinutesSinceMidnight: 960},
 				},
 			},
 			expectedError: nil,
 		},
 		"when thursday": {
 			openingHours: "W4T08:10:00/W4T16:15:00",
-			expectedResult: []openinghours.OpeningHours{
+			expectedResult: []OpeningHours{
 				{
-					Open:  &openinghours.TimeInWeek{Weekday: 4, MinutesSinceMidnight: 490},
-					Close: &openinghours.TimeInWeek{Weekday: 4, MinutesSinceMidnight: 975},
+					Open:  &TimeInWeek{Weekday: 4, MinutesSinceMidnight: 490},
+					Close: &TimeInWeek{Weekday: 4, MinutesSinceMidnight: 975},
 				},
 			},
 			expectedError: nil,
 		},
 		"when friday": {
 			openingHours: "W5T10:30:00/W5T13:00:00",
-			expectedResult: []openinghours.OpeningHours{
+			expectedResult: []OpeningHours{
 				{
-					Open:  &openinghours.TimeInWeek{Weekday: 5, MinutesSinceMidnight: 630},
-					Close: &openinghours.TimeInWeek{Weekday: 5, MinutesSinceMidnight: 780},
+					Open:  &TimeInWeek{Weekday: 5, MinutesSinceMidnight: 630},
+					Close: &TimeInWeek{Weekday: 5, MinutesSinceMidnight: 780},
 				},
 			},
 			expectedError: nil,
 		},
 		"when saturday": {
 			openingHours: "W6T08:00:00/W6T16:00:00",
-			expectedResult: []openinghours.OpeningHours{
+			expectedResult: []OpeningHours{
 				{
-					Open:  &openinghours.TimeInWeek{Weekday: 6, MinutesSinceMidnight: 480},
-					Close: &openinghours.TimeInWeek{Weekday: 6, MinutesSinceMidnight: 960},
+					Open:  &TimeInWeek{Weekday: 6, MinutesSinceMidnight: 480},
+					Close: &TimeInWeek{Weekday: 6, MinutesSinceMidnight: 960},
 				},
 			},
 			expectedError: nil,
 		},
 		"when sunday": {
 			openingHours: "W7T08:00:00/W7T16:00:00",
-			expectedResult: []openinghours.OpeningHours{
+			expectedResult: []OpeningHours{
 				{
-					Open:  &openinghours.TimeInWeek{Weekday: 7, MinutesSinceMidnight: 480},
-					Close: &openinghours.TimeInWeek{Weekday: 7, MinutesSinceMidnight: 960},
+					Open:  &TimeInWeek{Weekday: 7, MinutesSinceMidnight: 480},
+					Close: &TimeInWeek{Weekday: 7, MinutesSinceMidnight: 960},
 				},
 			},
 			expectedError: nil,
 		},
 		"when closing time is during the next day": {
 			openingHours: "W2T20:00:00/W3T04:00:00",
-			expectedResult: []openinghours.OpeningHours{
+			expectedResult: []OpeningHours{
 				{
-					Open:  &openinghours.TimeInWeek{Weekday: 2, MinutesSinceMidnight: 1200},
-					Close: &openinghours.TimeInWeek{Weekday: 3, MinutesSinceMidnight: 240},
+					Open:  &TimeInWeek{Weekday: 2, MinutesSinceMidnight: 1200},
+					Close: &TimeInWeek{Weekday: 3, MinutesSinceMidnight: 240},
 				},
 			},
 			expectedError: nil,
 		},
 		"when opening hours not specified": {
 			openingHours: "/W1T16:00:00",
-			expectedResult: []openinghours.OpeningHours{
+			expectedResult: []OpeningHours{
 				{
 					Open:  nil,
-					Close: &openinghours.TimeInWeek{Weekday: 1, MinutesSinceMidnight: 960},
+					Close: &TimeInWeek{Weekday: 1, MinutesSinceMidnight: 960},
 				},
 			},
 			expectedError: nil,
 		},
 		"when closing hours not specified": {
 			openingHours: "W1T08:00:00/",
-			expectedResult: []openinghours.OpeningHours{
+			expectedResult: []OpeningHours{
 				{
-					Open:  &openinghours.TimeInWeek{Weekday: 1, MinutesSinceMidnight: 480},
+					Open:  &TimeInWeek{Weekday: 1, MinutesSinceMidnight: 480},
 					Close: nil,
 				},
 			},
@@ -219,7 +218,7 @@ func TestParseOpeningHours(t *testing.T) {
 		},
 		"when opening and closing hours not specified": {
 			openingHours: "/",
-			expectedResult: []openinghours.OpeningHours{
+			expectedResult: []OpeningHours{
 				{
 					Open:  nil,
 					Close: nil,
@@ -229,31 +228,31 @@ func TestParseOpeningHours(t *testing.T) {
 		},
 		"when whole week": {
 			openingHours: "W1T00:00:00/W7T24:00:00",
-			expectedResult: []openinghours.OpeningHours{
+			expectedResult: []OpeningHours{
 				{
-					Open:  &openinghours.TimeInWeek{Weekday: 1, MinutesSinceMidnight: 0},
-					Close: &openinghours.TimeInWeek{Weekday: 7, MinutesSinceMidnight: 1440},
+					Open:  &TimeInWeek{Weekday: 1, MinutesSinceMidnight: 0},
+					Close: &TimeInWeek{Weekday: 7, MinutesSinceMidnight: 1440},
 				},
 			},
 			expectedError: nil,
 		},
 		"when multiple opening hours": {
 			openingHours: "W1T08:00:00/W1T16:00:00,W2T06:00:00/W2T20:00:00",
-			expectedResult: []openinghours.OpeningHours{
+			expectedResult: []OpeningHours{
 				{
-					Open:  &openinghours.TimeInWeek{Weekday: 1, MinutesSinceMidnight: 480},
-					Close: &openinghours.TimeInWeek{Weekday: 1, MinutesSinceMidnight: 960},
+					Open:  &TimeInWeek{Weekday: 1, MinutesSinceMidnight: 480},
+					Close: &TimeInWeek{Weekday: 1, MinutesSinceMidnight: 960},
 				},
 				{
-					Open:  &openinghours.TimeInWeek{Weekday: 2, MinutesSinceMidnight: 360},
-					Close: &openinghours.TimeInWeek{Weekday: 2, MinutesSinceMidnight: 1200},
+					Open:  &TimeInWeek{Weekday: 2, MinutesSinceMidnight: 360},
+					Close: &TimeInWeek{Weekday: 2, MinutesSinceMidnight: 1200},
 				},
 			},
 			expectedError: nil,
 		},
 		"when string empty": {
 			openingHours:   "",
-			expectedResult: []openinghours.OpeningHours{},
+			expectedResult: []OpeningHours{},
 			expectedError:  nil,
 		},
 		"when string invalid": {
@@ -314,7 +313,7 @@ func TestParseOpeningHours(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			result, err := openinghours.ParseOpeningHours(tt.openingHours)
+			result, err := ParseOpeningHours(tt.openingHours)
 			assert.Equal(t, tt.expectedError, err)
 			assert.Equal(t, tt.expectedResult, result)
 		})
@@ -379,7 +378,7 @@ func TestGetHumanReadableTimes(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			result, err := openinghours.GetHumanReadableTimes(tt.openingHours)
+			result, err := GetHumanReadableTimes(tt.openingHours)
 			assert.Equal(t, tt.expectedError, err)
 			assert.Equal(t, tt.expectedResult, result)
 		})

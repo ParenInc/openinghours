@@ -8,7 +8,7 @@ This package provides functionality to manage and parse opening hours for amenit
 
 ## Installation
 ```bash
-go get github.com/paren/openinghours
+go get github.com/pareninc/openinghours
 ```
 
 ## Features
@@ -22,7 +22,7 @@ go get github.com/paren/openinghours
 ### Basic Example
 
 ```go
-import "github.com/paren/openinghours"
+import "github.com/pareninc/openinghours"
 
 // Parse opening hours from string
 hours, err := openinghours.ParseOpeningHours("W2T06:00:00/W2T20:00:00,W5T10:30:00/W5T13:00:00")
