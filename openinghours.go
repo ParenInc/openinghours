@@ -224,6 +224,10 @@ func getWeekDay(weekday int) string {
 	}
 }
 
+// getHumanReadableTime parses a time string and returns the corresponding weekday, time, and week integer.
+// The `v` parameter is the time string to parse, which should follow the pattern "W{week}T{hour}:{minute}:{second}".
+// The `endTime` flag determines if the time at the end of a period should adjust to "24:00" of previous weekday if "00:00".
+// Returns the week integer, friendly weekday name, formatted time string, and an error if parsing fails.
 func getHumanReadableTime(v string, endTime bool) (int, string, string, error) {
 	re := regexp.MustCompile(`^W(\d)T(\d{2}):(\d{2}):\d{2}$`)
 	matches := re.FindStringSubmatch(v)
