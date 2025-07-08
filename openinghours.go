@@ -68,10 +68,11 @@ func GetHumanReadableTimes(s string) (map[string][]string, error) {
 			addTimeToWeek(openingTimes, openingWeekday, openingTime, closingTime)
 		} else {
 			addTimeToWeek(openingTimes, openingWeekday, openingTime, "24:00")
-			currentWeekInt := openingWeekInt%7 + 1
+			currentWeekInt := openingWeekInt
+			currentWeekInt.Next()
 			for currentWeekInt != closingWeekInt {
 				addTimeToWeek(openingTimes, getWeekDay(currentWeekInt), "00:00", "24:00")
-				currentWeekInt = currentWeekInt%7 + 1
+				currentWeekInt.Next()
 			}
 			addTimeToWeek(openingTimes, closingWeekday, "00:00", closingTime)
 		}
@@ -203,7 +204,7 @@ func parseWeekDay(v string) int {
 	return i
 }
 
-func getWeekDay(weekday int) string {
+func getWeekDay(weekday weekInt) string {
 	switch weekday {
 	case 1:
 		return "monday"
@@ -228,27 +229,24 @@ func getWeekDay(weekday int) string {
 // The `v` parameter is the time string to parse, which should follow the pattern "W{week}T{hour}:{minute}:{second}".
 // The `endTime` flag determines if the time at the end of a period should adjust to "24:00" of previous weekday if "00:00".
 // Returns the week integer, friendly weekday name, formatted time string, and an error if parsing fails.
-func getHumanReadableTime(v string, endTime bool) (int, string, string, error) {
+func getHumanReadableTime(v string, endTime bool) (weekInt, string, string, error) {
 	re := regexp.MustCompile(`^W(\d)T(\d{2}):(\d{2}):\d{2}$`)
 	matches := re.FindStringSubmatch(v)
 	if len(matches) < 2 {
 		return 0, "", "", fmt.Errorf("invalid value `%s`", v)
 	}
-	weekInt, _ := strconv.Atoi(matches[1])
-
+	weekIndex, _ := strconv.Atoi(matches[1])
+	weekI := weekInt(weekIndex)
 	hours := matches[2]
 	minutes := matches[3]
 	if hours == "00" && minutes == "00" && endTime {
-		weekInt = weekInt - 1
-		if weekInt < 1 {
-			weekInt = 7
-		}
+		weekI.Previous()
 		hours = "24"
 	}
-	weekday := getWeekDay(weekInt)
+	weekday := getWeekDay(weekI)
 	time := fmt.Sprintf("%s:%s", hours, minutes)
 
-	return weekInt, weekday, time, nil
+	return weekI, weekday, time, nil
 }
 
 func parseMinutesSinceMidnight(v1, v2 string) (int, error) {
@@ -267,4 +265,17 @@ func parseMinutesSinceMidnight(v1, v2 string) (int, error) {
 	}
 
 	return hours*60 + minutes, nil
+}
+
+type weekInt int
+
+func (w *weekInt) Next() {
+	*w = *w%7 + 1
+}
+
+func (w *weekInt) Previous() {
+	*w = *w - 1
+	if *w < 1 {
+		*w = 7
+	}
 }
