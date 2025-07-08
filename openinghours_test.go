@@ -371,6 +371,25 @@ func TestGetHumanReadableTimes(t *testing.T) {
 			},
 			expectedError: nil,
 		},
+		"starts on sunday and end on monday at 00:00": {
+			openingHours: "W7T00:00:00/W1T00:00:00",
+			expectedResult: map[string][]string{
+				"sunday": []string{
+					"open: 00:00, close: 24:00",
+				},
+			},
+		},
+		"starts on sunday and end on monday": {
+			openingHours: "W7T00:00:00/W1T10:00:00",
+			expectedResult: map[string][]string{
+				"sunday": []string{
+					"open: 00:00, close: 24:00",
+				},
+				"monday": []string{
+					"open: 00:00, close: 10:00",
+				},
+			},
+		},
 	}
 	for name, tt := range tests {
 		tt := tt
