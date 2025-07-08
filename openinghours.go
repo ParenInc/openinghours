@@ -56,11 +56,11 @@ func GetHumanReadableTimes(s string) (map[string][]string, error) {
 		if len(parts) != 2 {
 			return nil, fmt.Errorf("invalid opening hours string `%s`", str)
 		}
-		openingWeekInt, openingWeekday, openingTime, err := getHumanReadableTime(parts[0])
+		openingWeekInt, openingWeekday, openingTime, err := getHumanReadableTime(parts[0], false)
 		if err != nil {
 			return nil, fmt.Errorf("invalid opening hours string `%s`", str)
 		}
-		closingWeekInt, closingWeekday, closingTime, err := getHumanReadableTime(parts[1])
+		closingWeekInt, closingWeekday, closingTime, err := getHumanReadableTime(parts[1], true)
 		if err != nil {
 			return nil, fmt.Errorf("invalid opening hours string `%s`", str)
 		}
@@ -68,10 +68,10 @@ func GetHumanReadableTimes(s string) (map[string][]string, error) {
 			addTimeToWeek(openingTimes, openingWeekday, openingTime, closingTime)
 		} else {
 			addTimeToWeek(openingTimes, openingWeekday, openingTime, "24:00")
-			currentWeekInt := openingWeekInt + 1
+			currentWeekInt := openingWeekInt%7 + 1
 			for currentWeekInt != closingWeekInt {
 				addTimeToWeek(openingTimes, getWeekDay(currentWeekInt), "00:00", "24:00")
-				currentWeekInt++
+				currentWeekInt = currentWeekInt%7 + 1
 			}
 			addTimeToWeek(openingTimes, closingWeekday, "00:00", closingTime)
 		}
@@ -224,17 +224,24 @@ func getWeekDay(weekday int) string {
 	}
 }
 
-func getHumanReadableTime(v string) (int, string, string, error) {
+func getHumanReadableTime(v string, endTime bool) (int, string, string, error) {
 	re := regexp.MustCompile(`^W(\d)T(\d{2}):(\d{2}):\d{2}$`)
 	matches := re.FindStringSubmatch(v)
 	if len(matches) < 2 {
 		return 0, "", "", fmt.Errorf("invalid value `%s`", v)
 	}
 	weekInt, _ := strconv.Atoi(matches[1])
-	weekday := getWeekDay(weekInt)
 
 	hours := matches[2]
 	minutes := matches[3]
+	if hours == "00" && minutes == "00" && endTime {
+		weekInt = weekInt - 1
+		if weekInt < 1 {
+			weekInt = 7
+		}
+		hours = "24"
+	}
+	weekday := getWeekDay(weekInt)
 	time := fmt.Sprintf("%s:%s", hours, minutes)
 
 	return weekInt, weekday, time, nil
