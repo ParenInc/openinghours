@@ -323,35 +323,35 @@ func TestParseOpeningHours(t *testing.T) {
 func TestGetHumanReadableTimes(t *testing.T) {
 	tests := map[string]struct {
 		openingHours   string
-		expectedResult map[string][]string
+		expectedResult map[string][]TimeRange
 		expectedError  error
 	}{
 		"Open all Week Long": {
 			openingHours: "W1T00:00:00/W7T24:00:00",
-			expectedResult: map[string][]string{
-				"monday":    []string{"open: 00:00, close: 24:00"},
-				"tuesday":   []string{"open: 00:00, close: 24:00"},
-				"wednesday": []string{"open: 00:00, close: 24:00"},
-				"thursday":  []string{"open: 00:00, close: 24:00"},
-				"friday":    []string{"open: 00:00, close: 24:00"},
-				"saturday":  []string{"open: 00:00, close: 24:00"},
-				"sunday":    []string{"open: 00:00, close: 24:00"},
+			expectedResult: map[string][]TimeRange{
+				"monday":    {{Open: "00:00", Close: "24:00"}},
+				"tuesday":   {{Open: "00:00", Close: "24:00"}},
+				"wednesday": {{Open: "00:00", Close: "24:00"}},
+				"thursday":  {{Open: "00:00", Close: "24:00"}},
+				"friday":    {{Open: "00:00", Close: "24:00"}},
+				"saturday":  {{Open: "00:00", Close: "24:00"}},
+				"sunday":    {{Open: "00:00", Close: "24:00"}},
 			},
 			expectedError: nil,
 		},
 		"Open twice on monday": {
 			openingHours: "W1T08:00:00/W1T12:00:00,W1T13:00:00/W1T18:00:00",
-			expectedResult: map[string][]string{
-				"monday": []string{
-					"open: 08:00, close: 12:00",
-					"open: 13:00, close: 18:00",
+			expectedResult: map[string][]TimeRange{
+				"monday": {
+					{Open: "08:00", Close: "12:00"},
+					{Open: "13:00", Close: "18:00"},
 				},
 			},
 			expectedError: nil,
 		},
 		"never open": {
 			openingHours:   "",
-			expectedResult: map[string][]string{},
+			expectedResult: map[string][]TimeRange{},
 			expectedError:  nil,
 		},
 		"when string invalid": {
@@ -361,32 +361,30 @@ func TestGetHumanReadableTimes(t *testing.T) {
 		},
 		"starts on monday and end on tuesday": {
 			openingHours: "W1T08:00:00/W2T16:00:00",
-			expectedResult: map[string][]string{
-				"monday": []string{
-					"open: 08:00, close: 24:00",
-				},
-				"tuesday": []string{
-					"open: 00:00, close: 16:00",
-				},
+			expectedResult: map[string][]TimeRange{
+				"monday": {{
+					Open: "08:00", Close: "24:00",
+				}},
+				"tuesday": {{
+					Open: "00:00", Close: "16:00",
+				}},
 			},
 			expectedError: nil,
 		},
 		"starts on sunday and end on monday at 00:00": {
 			openingHours: "W7T00:00:00/W1T00:00:00",
-			expectedResult: map[string][]string{
-				"sunday": []string{
-					"open: 00:00, close: 24:00",
-				},
+			expectedResult: map[string][]TimeRange{
+				"sunday": {{Open: "00:00", Close: "24:00"}},
 			},
 		},
 		"starts on sunday and end on monday": {
 			openingHours: "W7T00:00:00/W1T10:00:00",
-			expectedResult: map[string][]string{
-				"sunday": []string{
-					"open: 00:00, close: 24:00",
+			expectedResult: map[string][]TimeRange{
+				"sunday": {
+					{Open: "00:00", Close: "24:00"},
 				},
-				"monday": []string{
-					"open: 00:00, close: 10:00",
+				"monday": {
+					{Open: "00:00", Close: "10:00"},
 				},
 			},
 		},

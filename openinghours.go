@@ -30,23 +30,29 @@ type OpeningHours struct {
 	Close *TimeInWeek
 }
 
-// GetHumanReadableTimes Returns a map of weekdays and times.
-//
+type TimeRange struct {
+	Open  string `json:"open"`
+	Close string `json:"close"`
+}
+
+// GetHumanReadableTimes Returns a map of weekdays and timeRanges for the given opening hours string.
+// The opening hours string is a comma-separated list of opening and closing times, each of which is
+// formatted as "W{week}T{hour}:{minute}:{second}".
 // For example, given the opening hours string "W3T10:00:00/W3T20:30:00,W5T10:00:00/W5T12:00:00,W5T13:00:00/W5T21:00:00",
 // the returned map would be:
 //
 //	openingHours: {
 //	 Monday: nil
 //	 Tuesday: nil
-//	 Wednesday: [{open: 10:00, close: 20:30}]
+//	 Wednesday: [{open: "10:00", close: "20:30"}]
 //	 Thursday: nil
-//	 Friday: [{open: 10:00, close: 12:00}, {open: 13:00, close: 21:00}]
+//	 Friday: [{open: "10:00", close: "12:00"}, {open: "13:00", close: "21:00"}]
 //	 ...
 //	}
-func GetHumanReadableTimes(s string) (map[string][]string, error) {
+func GetHumanReadableTimes(s string) (map[string][]TimeRange, error) {
 	strs := strings.Split(s, ",")
 
-	openingTimes := make(map[string][]string)
+	openingTimes := make(map[string][]TimeRange)
 	for _, str := range strs {
 		if str == "" {
 			continue
@@ -56,6 +62,7 @@ func GetHumanReadableTimes(s string) (map[string][]string, error) {
 		if len(parts) != 2 {
 			return nil, fmt.Errorf("invalid opening hours string `%s`", str)
 		}
+
 		openingWeekInt, openingWeekday, openingTime, err := getHumanReadableTime(parts[0], false)
 		if err != nil {
 			return nil, fmt.Errorf("invalid opening hours string `%s`", str)
@@ -64,6 +71,7 @@ func GetHumanReadableTimes(s string) (map[string][]string, error) {
 		if err != nil {
 			return nil, fmt.Errorf("invalid opening hours string `%s`", str)
 		}
+
 		if openingWeekInt == closingWeekInt {
 			addTimeToWeek(openingTimes, openingWeekday, openingTime, closingTime)
 		} else {
@@ -80,8 +88,8 @@ func GetHumanReadableTimes(s string) (map[string][]string, error) {
 	return openingTimes, nil
 }
 
-func addTimeToWeek(times map[string][]string, weekday string, openingTime string, closingTime string) {
-	times[weekday] = append(times[weekday], fmt.Sprintf("open: %s, close: %s", openingTime, closingTime))
+func addTimeToWeek(times map[string][]TimeRange, weekday string, openingTime string, closingTime string) {
+	times[weekday] = append(times[weekday], TimeRange{Open: openingTime, Close: closingTime})
 }
 
 // String returns the opening hours of the amenity in a string. Unfortunately, there are no formats
