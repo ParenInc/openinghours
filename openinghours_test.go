@@ -401,3 +401,39 @@ func TestGetHumanReadableTimes(t *testing.T) {
 		})
 	}
 }
+
+func TestGetWeekInt(t *testing.T) {
+	tests := map[string]struct {
+		weekday        string
+		expectedResult int
+	}{
+		"when monday": {
+			weekday:        "monday",
+			expectedResult: 1,
+		},
+		"when Sunday": {
+			weekday:        "tuesday",
+			expectedResult: 2,
+		},
+		"when invalid": {
+			weekday:        "invalid",
+			expectedResult: 0,
+		},
+		"when empty": {
+			weekday:        "",
+			expectedResult: 0,
+		},
+		"when sunday in CAPS": {
+			weekday:        "SUNDAY",
+			expectedResult: 7,
+		},
+	}
+	for name, tt := range tests {
+		tt := tt
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			result := GetWeekInt(tt.weekday)
+			assert.Equal(t, tt.expectedResult, result)
+		})
+	}
+}
