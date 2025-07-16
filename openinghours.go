@@ -233,6 +233,29 @@ func getWeekDay(weekday weekInt) string {
 	}
 }
 
+// GetWeekInt converts a weekday name (case-insensitive) to its corresponding RFC 3339 complient integer (1-7)
+// or returns 0 for invalid input.
+func GetWeekInt(v string) int {
+	switch strings.ToLower(v) {
+	case "monday":
+		return 1
+	case "tuesday":
+		return 2
+	case "wednesday":
+		return 3
+	case "thursday":
+		return 4
+	case "friday":
+		return 5
+	case "saturday":
+		return 6
+	case "sunday":
+		return 7
+	default:
+		return 0
+	}
+}
+
 // getHumanReadableTime parses a time string and returns the corresponding weekday, time, and week integer.
 // The `v` parameter is the time string to parse, which should follow the pattern "W{week}T{hour}:{minute}:{second}".
 // The `endTime` flag determines if the time at the end of a period should adjust to "24:00" of previous weekday if "00:00".
