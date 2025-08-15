@@ -460,6 +460,37 @@ func TestGetOCPIOpeningTimes(t *testing.T) {
 				},
 			},
 		},
+		"when starts on sunday and ends on monday at 00:00": {
+			openingHours: "W7T00:00:00/W1T00:00:00",
+			expectedResult: OCPIOpeningTimes{
+				TwentyFourSeven: false,
+				RegularHours: &[]OCPIRegularHours{
+					{
+						Weekday:     7,
+						PeriodBegin: "00:00",
+						PeriodEnd:   "00:00",
+					},
+				},
+			},
+		},
+		"when starts on sunday and ends on monday": {
+			openingHours: "W7T00:00:00/W1T10:00:00",
+			expectedResult: OCPIOpeningTimes{
+				TwentyFourSeven: false,
+				RegularHours: &[]OCPIRegularHours{
+					{
+						Weekday:     7,
+						PeriodBegin: "00:00",
+						PeriodEnd:   "00:00",
+					},
+					{
+						Weekday:     1,
+						PeriodBegin: "00:00",
+						PeriodEnd:   "10:00",
+					},
+				},
+			},
+		},
 		"when opening hours are empty": {
 			openingHours:   "",
 			expectedResult: OCPIOpeningTimes{},

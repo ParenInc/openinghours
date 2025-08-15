@@ -141,7 +141,7 @@ func GetHumanReadableTimes(ohs []OpeningHours) map[string][]TimeRange {
 
 	openingTimes := make(map[string][]TimeRange)
 	for _, oh := range ohs {
-		if minutesSinceMidnightToTime(oh.Close.MinutesSinceMidnight) == "00:00" {
+		if oh.Close.MinutesSinceMidnight == 0 {
 			setPreviousDay(&oh.Close.Weekday)
 			oh.Close.MinutesSinceMidnight = 1440 // 24:00
 		}
@@ -208,25 +208,41 @@ func GetOCPIOpeningTimes(ohs []OpeningHours) OCPIOpeningTimes {
 
 	var regularHours []OCPIRegularHours
 	for _, oh := range ohs {
-		for i := 0; oh.Open.Weekday <= oh.Close.Weekday; oh.Open.Weekday++ {
-			if i == 0 {
-				regularHours = append(regularHours, OCPIRegularHours{
-					Weekday:     oh.Open.Weekday,
-					PeriodBegin: fmt.Sprintf("%02d:%02d", oh.Open.MinutesSinceMidnight/60, oh.Open.MinutesSinceMidnight%60),
-					PeriodEnd:   "00:00",
-				})
-
-				i++
-				continue
-			}
-			regularHours = append(regularHours, OCPIRegularHours{
-				Weekday:     oh.Open.Weekday,
-				PeriodBegin: "00:00",
-				PeriodEnd:   "00:00",
-			})
+		switch oh.Close.MinutesSinceMidnight {
+		case 0:
+			setPreviousDay(&oh.Close.Weekday)
+		case 1440:
+			oh.Close.MinutesSinceMidnight = 0 // 24:00 is represented as 00:00 in the OCPI spec
 		}
 
-		regularHours[len(regularHours)-1].PeriodEnd = fmt.Sprintf("%02d:%02d", oh.Close.MinutesSinceMidnight/60, oh.Close.MinutesSinceMidnight%60)
+		if oh.Open.Weekday == oh.Close.Weekday {
+			regularHours = append(regularHours, OCPIRegularHours{
+				Weekday:     oh.Open.Weekday,
+				PeriodBegin: minutesSinceMidnightToTime(oh.Open.MinutesSinceMidnight),
+				PeriodEnd:   minutesSinceMidnightToTime(oh.Close.MinutesSinceMidnight),
+			})
+			continue
+		} else {
+			regularHours = append(regularHours, OCPIRegularHours{
+				Weekday:     oh.Open.Weekday,
+				PeriodBegin: minutesSinceMidnightToTime(oh.Open.MinutesSinceMidnight),
+				PeriodEnd:   "00:00",
+			})
+			setNextDay(&oh.Open.Weekday)
+			for oh.Open.Weekday != oh.Close.Weekday {
+				regularHours = append(regularHours, OCPIRegularHours{
+					Weekday:     oh.Open.Weekday,
+					PeriodBegin: "00:00",
+					PeriodEnd:   "00:00",
+				})
+				setNextDay(&oh.Open.Weekday)
+			}
+			regularHours = append(regularHours, OCPIRegularHours{
+				Weekday:     oh.Close.Weekday,
+				PeriodBegin: "00:00",
+				PeriodEnd:   minutesSinceMidnightToTime(oh.Close.MinutesSinceMidnight),
+			})
+		}
 	}
 	if len(regularHours) == 0 {
 		return OCPIOpeningTimes{}
@@ -345,9 +361,6 @@ func parseMinutesSinceMidnight(v1, v2 string) (int, error) {
 }
 
 func minutesSinceMidnightToTime(minutesSinceMidnight int) string {
-	if minutesSinceMidnight == 1440 {
-		return "24:00"
-	}
 	hours := minutesSinceMidnight / 60
 	minutes := minutesSinceMidnight % 60
 	return fmt.Sprintf("%02d:%02d", hours, minutes)
