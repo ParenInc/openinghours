@@ -299,7 +299,7 @@ func parseTimeInWeek(v string) (*timeInWeek, error) {
 		return nil, fmt.Errorf("invalid workday in `%s`: expected to be between 1 (monday) and 7 (sunday)", v)
 	}
 
-	minutesSinceMidnight, err := parseminutesSinceMidnight(matches[2], matches[3])
+	minutesSinceMidnight, err := parseMinutesSinceMidnight(matches[2], matches[3])
 	if err != nil {
 		return nil, fmt.Errorf("invalid time in `%s`: %s", v, err)
 	}
@@ -342,7 +342,7 @@ func getWeekDay(weekday int) string {
 	}
 }
 
-func parseminutesSinceMidnight(v1, v2 string) (int, error) {
+func parseMinutesSinceMidnight(v1, v2 string) (int, error) {
 	hours, err := strconv.Atoi(v1)
 	if err != nil || (hours < 0 || hours > 24) {
 		return 0, fmt.Errorf("invalid hours value")
