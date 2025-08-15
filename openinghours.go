@@ -7,10 +7,10 @@ import (
 	"strings"
 )
 
-// AmenityOpeningHours contains an amenity's opening and closing times within a given week. The
+// OpeningHours contains an opening and closing times within a given week. The
 // values are in minutes since the beginning of the day.
 //
-// For example, an amenity that has OpeningHours of
+// For example, a location that has OpeningHours of
 //
 //	[]OpeningHours {
 //	    {
@@ -22,12 +22,60 @@ import (
 //	    },
 //	}
 //
-// would mean that the amenity is open
+// would mean that it is open
 // * tuesdays, from 06:00 (6am) to 20:00 (8pm); and
 // * fridays, from 10:30 (10:30am) to 13:00 (1pm).
+
+const (
+	TwentyFourSevenString = "W1T00:00:00/W7T24:00:00"
+)
+
+var (
+	TwentyFourSevenOH = OpeningHours{
+		Open:  &TimeInWeek{Weekday: 1, MinutesSinceMidnight: 0},
+		Close: &TimeInWeek{Weekday: 7, MinutesSinceMidnight: 1440},
+	}
+)
+
 type OpeningHours struct {
 	Open  *TimeInWeek
 	Close *TimeInWeek
+}
+
+// String returns the opening hours of the amenity in a string. Unfortunately, there are no formats
+// in either standards (RFC 3339 or ISO 8601) to represent a recurring time within a given week, so
+// one is invented here.
+//
+// Using the same example as above, the resulting strings would be
+// * "W2T06:00:00/W2T20:00:00"; and
+// * "W5T10:30:00/W5T13:00:00".
+//
+// Contrary to the stdlib's time, the start of the week is monday, to follow RFC 3339.
+//
+// No time zone information is provided, as the opening hours are static within the given day, ie.
+// they don't change during a daylight saving time change.
+func (oh OpeningHours) String() string {
+	var open string
+	if oh.Open != nil {
+		open = fmt.Sprintf(
+			"W%dT%02d:%02d:00",
+			oh.Open.Weekday,
+			oh.Open.MinutesSinceMidnight/60,
+			oh.Open.MinutesSinceMidnight%60,
+		)
+	}
+
+	var close string
+	if oh.Close != nil {
+		close = fmt.Sprintf(
+			"W%dT%02d:%02d:00",
+			oh.Close.Weekday,
+			oh.Close.MinutesSinceMidnight/60,
+			oh.Close.MinutesSinceMidnight%60,
+		)
+	}
+
+	return fmt.Sprintf("%s/%s", open, close)
 }
 
 type TimeRange struct {
@@ -77,10 +125,10 @@ func GetHumanReadableTimes(s string) (map[string][]TimeRange, error) {
 		} else {
 			addTimeToWeek(openingTimes, openingWeekday, openingTime, "24:00")
 			currentWeekInt := openingWeekInt
-			currentWeekInt.Next()
+			currentWeekInt.next()
 			for currentWeekInt != closingWeekInt {
 				addTimeToWeek(openingTimes, getWeekDay(currentWeekInt), "00:00", "24:00")
-				currentWeekInt.Next()
+				currentWeekInt.next()
 			}
 			addTimeToWeek(openingTimes, closingWeekday, "00:00", closingTime)
 		}
@@ -90,42 +138,6 @@ func GetHumanReadableTimes(s string) (map[string][]TimeRange, error) {
 
 func addTimeToWeek(times map[string][]TimeRange, weekday string, openingTime string, closingTime string) {
 	times[weekday] = append(times[weekday], TimeRange{Open: openingTime, Close: closingTime})
-}
-
-// String returns the opening hours of the amenity in a string. Unfortunately, there are no formats
-// in either standards (RFC 3339 or ISO 8601) to represent a recurring time within a given week, so
-// one is invented here.
-//
-// Using the same example as above, the resulting strings would be
-// * "W2T06:00:00/W2T20:00:00"; and
-// * "W5T10:30:00/W5T13:00:00".
-//
-// Contrary to the stdlib's time, the start of the week is monday, to follow RFC 3339.
-//
-// No time zone information is provided, as the opening hours are static within the given day, ie.
-// they don't change during a daylight saving time change.
-func (oh OpeningHours) String() string {
-	var open string
-	if oh.Open != nil {
-		open = fmt.Sprintf(
-			"W%dT%02d:%02d:00",
-			oh.Open.Weekday,
-			oh.Open.MinutesSinceMidnight/60,
-			oh.Open.MinutesSinceMidnight%60,
-		)
-	}
-
-	var close string
-	if oh.Close != nil {
-		close = fmt.Sprintf(
-			"W%dT%02d:%02d:00",
-			oh.Close.Weekday,
-			oh.Close.MinutesSinceMidnight/60,
-			oh.Close.MinutesSinceMidnight%60,
-		)
-	}
-
-	return fmt.Sprintf("%s/%s", open, close)
 }
 
 // ParseOpeningHours does the opposite of OpeningHours.String method. It converts a string like
@@ -163,6 +175,74 @@ func ParseOpeningHours(v string) ([]OpeningHours, error) {
 	}
 
 	return ohs, nil
+}
+
+type OCPIOpeningTimes struct {
+	TwentyFourSeven bool                `json:"twenty_four_seven" example:"false"`
+	RegularHours    *[]OCPIRegularHours `json:"regular_hours,omitempty"`
+}
+
+type OCPIRegularHours struct {
+	Weekday     int    `json:"weekday" example:"1"`
+	PeriodBegin string `json:"period_begin" example:"06:00"`
+	PeriodEnd   string `json:"period_end" example:"22:00"`
+}
+
+func GetOCPIOpeningTimes(ohs []OpeningHours) OCPIOpeningTimes {
+	if isTwentyFourSeven(ohs) {
+		return OCPIOpeningTimes{TwentyFourSeven: true}
+	}
+
+	var regularHours []OCPIRegularHours
+	for _, oh := range ohs {
+		for i := 0; oh.Open.Weekday <= oh.Close.Weekday; oh.Open.Weekday++ {
+			if i == 0 {
+				regularHours = append(regularHours, OCPIRegularHours{
+					Weekday:     oh.Open.Weekday,
+					PeriodBegin: fmt.Sprintf("%02d:%02d", oh.Open.MinutesSinceMidnight/60, oh.Open.MinutesSinceMidnight%60),
+					PeriodEnd:   "00:00",
+				})
+
+				i++
+				continue
+			}
+			regularHours = append(regularHours, OCPIRegularHours{
+				Weekday:     oh.Open.Weekday,
+				PeriodBegin: "00:00",
+				PeriodEnd:   "00:00",
+			})
+		}
+
+		regularHours[len(regularHours)-1].PeriodEnd = fmt.Sprintf("%02d:%02d", oh.Close.MinutesSinceMidnight/60, oh.Close.MinutesSinceMidnight%60)
+	}
+	if len(regularHours) == 0 {
+		return OCPIOpeningTimes{}
+	}
+
+	return OCPIOpeningTimes{
+		TwentyFourSeven: false,
+		RegularHours:    &regularHours,
+	}
+}
+
+func isTwentyFourSeven(ohs []OpeningHours) bool {
+	if len(ohs) == 0 {
+		return false
+	}
+
+	for _, oh := range ohs {
+		if oh.Open == nil || oh.Close == nil {
+			return false
+		}
+		if oh.Open.Weekday != 1 || oh.Close.Weekday != 7 {
+			return false
+		}
+		if oh.Open.MinutesSinceMidnight != 0 || oh.Close.MinutesSinceMidnight != 1440 {
+			return false
+		}
+	}
+
+	return true
 }
 
 // TimeInWeek contains a time within the week, given by the weekday number and the minutes since
@@ -271,7 +351,7 @@ func getHumanReadableTime(v string, endTime bool) (weekInt, string, string, erro
 	hours := matches[2]
 	minutes := matches[3]
 	if hours == "00" && minutes == "00" && endTime {
-		weekI.Previous()
+		weekI.previous()
 		hours = "24"
 	}
 	weekday := getWeekDay(weekI)
@@ -300,11 +380,11 @@ func parseMinutesSinceMidnight(v1, v2 string) (int, error) {
 
 type weekInt int
 
-func (w *weekInt) Next() {
+func (w *weekInt) next() {
 	*w = *w%7 + 1
 }
 
-func (w *weekInt) Previous() {
+func (w *weekInt) previous() {
 	*w = *w - 1
 	if *w < 1 {
 		*w = 7

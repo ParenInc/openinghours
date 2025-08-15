@@ -437,3 +437,84 @@ func TestGetWeekInt(t *testing.T) {
 		})
 	}
 }
+
+func TestGetOCPIOpeningTimes(t *testing.T) {
+	tests := map[string]struct {
+		openingHours   string
+		expectedResult OCPIOpeningTimes
+	}{
+		"when 24/7": {
+			openingHours: "W1T00:00:00/W7T24:00:00",
+			expectedResult: OCPIOpeningTimes{
+				TwentyFourSeven: true,
+			},
+		},
+		"when same opening times monday to friday": {
+			openingHours: "W1T08:00:00/W1T16:00:00,W2T08:00:00/W2T16:00:00,W3T08:00:00/W3T16:00:00,W4T08:00:00/W4T16:00:00,W5T08:00:00/W5T16:00:00",
+			expectedResult: OCPIOpeningTimes{
+				TwentyFourSeven: false,
+				RegularHours: &[]OCPIRegularHours{
+					{
+						Weekday:     1,
+						PeriodBegin: "08:00",
+						PeriodEnd:   "16:00",
+					},
+					{
+						Weekday:     2,
+						PeriodBegin: "08:00",
+						PeriodEnd:   "16:00",
+					},
+					{
+						Weekday:     3,
+						PeriodBegin: "08:00",
+						PeriodEnd:   "16:00",
+					},
+					{
+						Weekday:     4,
+						PeriodBegin: "08:00",
+						PeriodEnd:   "16:00",
+					},
+					{
+						Weekday:     5,
+						PeriodBegin: "08:00",
+						PeriodEnd:   "16:00",
+					},
+				},
+			},
+		},
+		"when starts on monday and ends on tuesday": {
+			openingHours: "W1T08:00:00/W2T16:00:00",
+			expectedResult: OCPIOpeningTimes{
+				TwentyFourSeven: false,
+				RegularHours: &[]OCPIRegularHours{
+					{
+						Weekday:     1,
+						PeriodBegin: "08:00",
+						PeriodEnd:   "00:00",
+					},
+					{
+						Weekday:     2,
+						PeriodBegin: "00:00",
+						PeriodEnd:   "16:00",
+					},
+				},
+			},
+		},
+		"when opening hours are empty": {
+			openingHours:   "",
+			expectedResult: OCPIOpeningTimes{},
+		},
+	}
+
+	for name, tt := range tests {
+		tt := tt
+
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			ohs, _ := ParseOpeningHours(tt.openingHours)
+			result := GetOCPIOpeningTimes(ohs)
+			assert.Equal(t, tt.expectedResult, result)
+		})
+	}
+}
