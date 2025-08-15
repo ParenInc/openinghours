@@ -351,13 +351,8 @@ func TestGetHumanReadableTimes(t *testing.T) {
 		},
 		"never open": {
 			openingHours:   "",
-			expectedResult: map[string][]TimeRange{},
-			expectedError:  nil,
-		},
-		"when string invalid": {
-			openingHours:   "invalid",
 			expectedResult: nil,
-			expectedError:  fmt.Errorf("invalid opening hours string `invalid`"),
+			expectedError:  nil,
 		},
 		"starts on monday and end on tuesday": {
 			openingHours: "W1T08:00:00/W2T16:00:00",
@@ -395,44 +390,9 @@ func TestGetHumanReadableTimes(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			result, err := GetHumanReadableTimes(tt.openingHours)
+			ohs, err := ParseOpeningHours(tt.openingHours)
 			assert.Equal(t, tt.expectedError, err)
-			assert.Equal(t, tt.expectedResult, result)
-		})
-	}
-}
-
-func TestGetWeekInt(t *testing.T) {
-	tests := map[string]struct {
-		weekday        string
-		expectedResult int
-	}{
-		"when monday": {
-			weekday:        "monday",
-			expectedResult: 1,
-		},
-		"when Sunday": {
-			weekday:        "tuesday",
-			expectedResult: 2,
-		},
-		"when invalid": {
-			weekday:        "invalid",
-			expectedResult: 0,
-		},
-		"when empty": {
-			weekday:        "",
-			expectedResult: 0,
-		},
-		"when sunday in CAPS": {
-			weekday:        "SUNDAY",
-			expectedResult: 7,
-		},
-	}
-	for name, tt := range tests {
-		tt := tt
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			result := GetWeekInt(tt.weekday)
+			result := GetHumanReadableTimes(ohs)
 			assert.Equal(t, tt.expectedResult, result)
 		})
 	}
