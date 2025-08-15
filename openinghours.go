@@ -14,11 +14,11 @@ import (
 //
 //	[]OpeningHours {
 //	    {
-//	        Open: &TimeInWeek{ Weekday: time.Tuesday, minutesSinceMidnight: 360 },
-//	        Close: &TimeInWeek{ Weekday: time.Tuesday, minutesSinceMidnight: 1200 },
+//	        Open: &timeInWeek{ weekday: time.Tuesday, minutesSinceMidnight: 360 },
+//	        Close: &timeInWeek{ weekday: time.Tuesday, minutesSinceMidnight: 1200 },
 //	    }, {
-//	        Open: &TimeInWeek{ Weekday: time.Friday, minutesSinceMidnight: 630 },
-//	        Close: &TimeInWeek{ Weekday: time.Friday, minutesSinceMidnight: 780 },
+//	        Open: &timeInWeek{ weekday: time.Friday, minutesSinceMidnight: 630 },
+//	        Close: &timeInWeek{ weekday: time.Friday, minutesSinceMidnight: 780 },
 //	    },
 //	}
 //
