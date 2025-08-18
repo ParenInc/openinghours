@@ -25,19 +25,32 @@ go get github.com/pareninc/openinghours
 import "github.com/pareninc/openinghours"
 
 // Parse opening hours from string
-hours, err := openinghours.ParseOpeningHours("W2T06:00:00/W2T20:00:00,W5T10:30:00/W5T13:00:00")
+hours, err := openinghours.ParseOpeningHours("W3T10:00:00/W3T20:30:00,W5T10:00:00/W5T12:00:00")
 if err != nil {
     log.Fatal(err)
 }
 
 // Convert to human-readable format
-humanReadable, err := openinghours.GetHumanReadableTimes("W3T10:00:00/W3T20:30:00,W5T10:00:00/W5T12:00:00")
+humanReadable, err := openinghours.GetHumanReadableTimes(hours)
 if err != nil {
     log.Fatal(err)
 }
 // humanReadable := map[string][]string{
 //  "wednesday": []string{"open: 10:00, close: 20:30"},
 //  "friday":    []string{"open: 10:00, close: 12:00"},
+// }
+
+// Convert to OCPI3.0 format
+ocpiHours, err := openinghours.GetOCPIOpeningTimes(hours)
+if err != nil {
+    log.Fatal(err)
+}
+// ocpi := OCPIOpeningTimes{
+//  TwentyFourSeven: false,
+//  RegularHours: &[]OCPIRegularHours{
+//           {Weekday: 3, PeriodBegin: "10:00", PeriodEnd: "20:30"},
+//           {Weekday: 5, PeriodBegin: "10:00", PeriodEnd: "12:00"},
+//       },
 // }
 ```
 
@@ -54,9 +67,13 @@ The package uses a custom string format for representing opening hours:
 Example: represents Tuesday from 6:00 AM to 8:00 PM `"W2T06:00:00/W2T20:00:00"`
 
 ### Working with Opening Hours
-The package provides two main types:
-- `OpeningHours`: Contains opening and closing times
+The package provides three main type:
+- `OpeningHours`: Contains opening and closing times with weekdays and minutes after midnight
 - `TimeInWeek`: Represents a specific time within a week
+- `TimeRange`: Represents open and close times as strings
+- `OCPIOpeningTimes`: Represents the Hours class from the OCPI 3.0 standard
+
+You must parse a string using `ParseOpeningHours()` to obtain a slice of `OpeningHours`.
 
 ## License
 MIT License - see [LICENSE](LICENSE) for details
