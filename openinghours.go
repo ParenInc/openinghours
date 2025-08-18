@@ -32,14 +32,14 @@ const (
 
 var (
 	TwentyFourSevenOH = OpeningHours{
-		open:  &timeInWeek{weekday: 1, minutesSinceMidnight: 0},
-		close: &timeInWeek{weekday: 7, minutesSinceMidnight: 1440},
+		Open:  &TimeInWeek{Weekday: 1, MinutesSinceMidnight: 0},
+		Close: &TimeInWeek{Weekday: 7, MinutesSinceMidnight: 1440},
 	}
 )
 
 type OpeningHours struct {
-	open  *timeInWeek
-	close *timeInWeek
+	Open  *TimeInWeek
+	Close *TimeInWeek
 }
 
 // String returns the opening hours of the amenity in a string. Unfortunately, there are no formats
@@ -56,22 +56,22 @@ type OpeningHours struct {
 // they don't change during a daylight saving time change.
 func (oh OpeningHours) String() string {
 	var open string
-	if oh.open != nil {
+	if oh.Open != nil {
 		open = fmt.Sprintf(
 			"W%dT%02d:%02d:00",
-			oh.open.weekday,
-			oh.open.minutesSinceMidnight/60,
-			oh.open.minutesSinceMidnight%60,
+			oh.Open.Weekday,
+			oh.Open.MinutesSinceMidnight/60,
+			oh.Open.MinutesSinceMidnight%60,
 		)
 	}
 
 	var close string
-	if oh.close != nil {
+	if oh.Close != nil {
 		close = fmt.Sprintf(
 			"W%dT%02d:%02d:00",
-			oh.close.weekday,
-			oh.close.minutesSinceMidnight/60,
-			oh.close.minutesSinceMidnight%60,
+			oh.Close.Weekday,
+			oh.Close.MinutesSinceMidnight/60,
+			oh.Close.MinutesSinceMidnight%60,
 		)
 	}
 
@@ -105,8 +105,8 @@ func ParseOpeningHours(v string) ([]OpeningHours, error) {
 		}
 
 		oh := OpeningHours{
-			open:  openingHours,
-			close: closingHours,
+			Open:  openingHours,
+			Close: closingHours,
 		}
 
 		ohs = append(ohs, oh)
@@ -141,20 +141,20 @@ func GetHumanReadableTimes(ohs []OpeningHours) map[string][]TimeRange {
 
 	openingTimes := make(map[string][]TimeRange)
 	for _, oh := range ohs {
-		if oh.close.minutesSinceMidnight == 0 {
-			setPreviousDay(&oh.close.weekday)
-			oh.close.minutesSinceMidnight = 1440 // 24:00
+		if oh.Close.MinutesSinceMidnight == 0 {
+			setPreviousDay(&oh.Close.Weekday)
+			oh.Close.MinutesSinceMidnight = 1440 // 24:00
 		}
-		if oh.open.weekday == oh.close.weekday {
-			addTimeToWeek(openingTimes, getWeekDay(oh.open.weekday), minutesSinceMidnightToTime(oh.open.minutesSinceMidnight), minutesSinceMidnightToTime(oh.close.minutesSinceMidnight))
+		if oh.Open.Weekday == oh.Close.Weekday {
+			addTimeToWeek(openingTimes, getWeekDay(oh.Open.Weekday), minutesSinceMidnightToTime(oh.Open.MinutesSinceMidnight), minutesSinceMidnightToTime(oh.Close.MinutesSinceMidnight))
 		} else {
-			addTimeToWeek(openingTimes, getWeekDay(oh.open.weekday), minutesSinceMidnightToTime(oh.open.minutesSinceMidnight), "24:00")
-			setNextDay(&oh.open.weekday)
-			for oh.open.weekday != oh.close.weekday {
-				addTimeToWeek(openingTimes, getWeekDay(oh.open.weekday), "00:00", "24:00")
-				setNextDay(&oh.open.weekday)
+			addTimeToWeek(openingTimes, getWeekDay(oh.Open.Weekday), minutesSinceMidnightToTime(oh.Open.MinutesSinceMidnight), "24:00")
+			setNextDay(&oh.Open.Weekday)
+			for oh.Open.Weekday != oh.Close.Weekday {
+				addTimeToWeek(openingTimes, getWeekDay(oh.Open.Weekday), "00:00", "24:00")
+				setNextDay(&oh.Open.Weekday)
 			}
-			addTimeToWeek(openingTimes, getWeekDay(oh.close.weekday), "00:00", minutesSinceMidnightToTime(oh.close.minutesSinceMidnight))
+			addTimeToWeek(openingTimes, getWeekDay(oh.Close.Weekday), "00:00", minutesSinceMidnightToTime(oh.Close.MinutesSinceMidnight))
 		}
 	}
 	return openingTimes
@@ -208,39 +208,39 @@ func GetOCPIOpeningTimes(ohs []OpeningHours) OCPIOpeningTimes {
 
 	var regularHours []OCPIRegularHours
 	for _, oh := range ohs {
-		switch oh.close.minutesSinceMidnight {
+		switch oh.Close.MinutesSinceMidnight {
 		case 0:
-			setPreviousDay(&oh.close.weekday)
+			setPreviousDay(&oh.Close.Weekday)
 		case 1440:
-			oh.close.minutesSinceMidnight = 0 // 24:00 is represented as 00:00 in the OCPI spec
+			oh.Close.MinutesSinceMidnight = 0 // 24:00 is represented as 00:00 in the OCPI spec
 		}
 
-		if oh.open.weekday == oh.close.weekday {
+		if oh.Open.Weekday == oh.Close.Weekday {
 			regularHours = append(regularHours, OCPIRegularHours{
-				Weekday:     oh.open.weekday,
-				PeriodBegin: minutesSinceMidnightToTime(oh.open.minutesSinceMidnight),
-				PeriodEnd:   minutesSinceMidnightToTime(oh.close.minutesSinceMidnight),
+				Weekday:     oh.Open.Weekday,
+				PeriodBegin: minutesSinceMidnightToTime(oh.Open.MinutesSinceMidnight),
+				PeriodEnd:   minutesSinceMidnightToTime(oh.Close.MinutesSinceMidnight),
 			})
 			continue
 		} else {
 			regularHours = append(regularHours, OCPIRegularHours{
-				Weekday:     oh.open.weekday,
-				PeriodBegin: minutesSinceMidnightToTime(oh.open.minutesSinceMidnight),
+				Weekday:     oh.Open.Weekday,
+				PeriodBegin: minutesSinceMidnightToTime(oh.Open.MinutesSinceMidnight),
 				PeriodEnd:   "00:00",
 			})
-			setNextDay(&oh.open.weekday)
-			for oh.open.weekday != oh.close.weekday {
+			setNextDay(&oh.Open.Weekday)
+			for oh.Open.Weekday != oh.Close.Weekday {
 				regularHours = append(regularHours, OCPIRegularHours{
-					Weekday:     oh.open.weekday,
+					Weekday:     oh.Open.Weekday,
 					PeriodBegin: "00:00",
 					PeriodEnd:   "00:00",
 				})
-				setNextDay(&oh.open.weekday)
+				setNextDay(&oh.Open.Weekday)
 			}
 			regularHours = append(regularHours, OCPIRegularHours{
-				Weekday:     oh.close.weekday,
+				Weekday:     oh.Close.Weekday,
 				PeriodBegin: "00:00",
-				PeriodEnd:   minutesSinceMidnightToTime(oh.close.minutesSinceMidnight),
+				PeriodEnd:   minutesSinceMidnightToTime(oh.Close.MinutesSinceMidnight),
 			})
 		}
 	}
@@ -260,13 +260,13 @@ func isTwentyFourSeven(ohs []OpeningHours) bool {
 	}
 
 	for _, oh := range ohs {
-		if oh.open == nil || oh.close == nil {
+		if oh.Open == nil || oh.Close == nil {
 			return false
 		}
-		if oh.open.weekday != 1 || oh.close.weekday != 7 {
+		if oh.Open.Weekday != 1 || oh.Close.Weekday != 7 {
 			return false
 		}
-		if oh.open.minutesSinceMidnight != 0 || oh.close.minutesSinceMidnight != 1440 {
+		if oh.Open.MinutesSinceMidnight != 0 || oh.Close.MinutesSinceMidnight != 1440 {
 			return false
 		}
 	}
@@ -278,12 +278,12 @@ func isTwentyFourSeven(ohs []OpeningHours) bool {
 // midnight.
 //
 // Note that the Weekday is as per RFC 3339, not stdlib's time.Weekday.
-type timeInWeek struct {
-	weekday              int
-	minutesSinceMidnight int
+type TimeInWeek struct {
+	Weekday              int
+	MinutesSinceMidnight int
 }
 
-func parseTimeInWeek(v string) (*timeInWeek, error) {
+func parseTimeInWeek(v string) (*TimeInWeek, error) {
 	if v == "" {
 		return nil, nil
 	}
@@ -304,9 +304,9 @@ func parseTimeInWeek(v string) (*timeInWeek, error) {
 		return nil, fmt.Errorf("invalid time in `%s`: %s", v, err)
 	}
 
-	tiw := timeInWeek{
-		weekday:              weekday,
-		minutesSinceMidnight: minutesSinceMidnight,
+	tiw := TimeInWeek{
+		Weekday:              weekday,
+		MinutesSinceMidnight: minutesSinceMidnight,
 	}
 
 	return &tiw, nil

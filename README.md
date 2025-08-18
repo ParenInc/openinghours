@@ -69,6 +69,7 @@ Example: represents Tuesday from 6:00 AM to 8:00 PM `"W2T06:00:00/W2T20:00:00"`
 ### Working with Opening Hours
 The package provides three main type:
 - `OpeningHours`: Contains opening and closing times with weekdays and minutes after midnight
+- `TimeInWeek`: Represents a specific time within a week
 - `TimeRange`: Represents open and close times as strings
 - `OCPIOpeningTimes`: Represents the Hours class from the OCPI 3.0 standard
 
