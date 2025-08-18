@@ -165,7 +165,7 @@ func addTimeToWeek(times map[string][]TimeRange, weekday string, openingTime str
 }
 
 type OCPIOpeningTimes struct {
-	TwentyFourSeven bool                `json:"twenty_four_seven" example:"false"`
+	TwentyFourSeven bool                `json:"twentyfourseven" example:"false"`
 	RegularHours    *[]OCPIRegularHours `json:"regular_hours,omitempty"`
 }
 
