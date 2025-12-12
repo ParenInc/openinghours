@@ -254,6 +254,49 @@ func GetOCPIOpeningTimes(ohs []OpeningHours) OCPIOpeningTimes {
 	}
 }
 
+// ParseStringWeekdayToTimeWeekday converts a string representation of a weekday
+// (e.g., "monday", "tuesday") to the corresponding time.Weekday value.
+func ParseStringWeekdayToTimeWeekday(dayStr string) (time.Weekday, error) {
+	switch strings.ToLower(dayStr) {
+	case "monday":
+		return time.Monday, nil
+	case "tuesday":
+		return time.Tuesday, nil
+	case "wednesday":
+		return time.Wednesday, nil
+	case "thursday":
+		return time.Thursday, nil
+	case "friday":
+		return time.Friday, nil
+	case "saturday":
+		return time.Saturday, nil
+	case "sunday":
+		return time.Sunday, nil
+	default:
+		return time.Sunday, fmt.Errorf("invalid weekday: %s", dayStr)
+	}
+}
+
+// ParseMinutesSinceMidnight parses hours and minutes strings into total minutes since midnight.
+// e.g. ("08", "30") -> 510
+func ParseMinutesSinceMidnight(v1, v2 string) (int, error) {
+	hours, err := strconv.Atoi(v1)
+	if err != nil || (hours < 0 || hours > 24) {
+		return 0, fmt.Errorf("invalid hours value")
+	}
+
+	minutes, err := strconv.Atoi(v2)
+	if err != nil || (minutes < 0 || minutes > 59) {
+		return 0, fmt.Errorf("invalid minutes value")
+	}
+
+	if hours == 24 && minutes != 0 {
+		return 0, fmt.Errorf("invalid value")
+	}
+
+	return hours*60 + minutes, nil
+}
+
 func isTwentyFourSeven(ohs []OpeningHours) bool {
 	if len(ohs) == 0 {
 		return false
@@ -299,7 +342,7 @@ func parseTimeInWeek(v string) (*TimeInWeek, error) {
 		return nil, fmt.Errorf("invalid workday in `%s`: expected to be between 1 (monday) and 7 (sunday)", v)
 	}
 
-	minutesSinceMidnight, err := parseMinutesSinceMidnight(matches[2], matches[3])
+	minutesSinceMidnight, err := ParseMinutesSinceMidnight(matches[2], matches[3])
 	if err != nil {
 		return nil, fmt.Errorf("invalid time in `%s`: %s", v, err)
 	}
@@ -340,24 +383,6 @@ func getWeekDay(weekday int) string {
 	default:
 		return ""
 	}
-}
-
-func parseMinutesSinceMidnight(v1, v2 string) (int, error) {
-	hours, err := strconv.Atoi(v1)
-	if err != nil || (hours < 0 || hours > 24) {
-		return 0, fmt.Errorf("invalid hours value")
-	}
-
-	minutes, err := strconv.Atoi(v2)
-	if err != nil || (minutes < 0 || minutes > 59) {
-		return 0, fmt.Errorf("invalid minutes value")
-	}
-
-	if hours == 24 && minutes != 0 {
-		return 0, fmt.Errorf("invalid value")
-	}
-
-	return hours*60 + minutes, nil
 }
 
 func minutesSinceMidnightToTime(minutesSinceMidnight int) string {
