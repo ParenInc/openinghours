@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // OpeningHours contains an opening and closing times within a given week. The
@@ -76,6 +77,15 @@ func (oh OpeningHours) String() string {
 	}
 
 	return fmt.Sprintf("%s/%s", open, close)
+}
+
+func OpeningHoursSliceToString(ohs []OpeningHours) string {
+	openingHoursStr := make([]string, len(ohs))
+	for i, openingHours := range ohs {
+		openingHoursStr[i] = openingHours.String()
+	}
+
+	return strings.Join(openingHoursStr, ",")
 }
 
 // ParseOpeningHours does the opposite of OpeningHours.String method. It converts a string like
