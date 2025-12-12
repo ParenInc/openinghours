@@ -269,22 +269,22 @@ func GetOCPIOpeningTimes(ohs []OpeningHours) OCPIOpeningTimes {
 // (e.g., "monday", "tuesday") to the corresponding time.Weekday value.
 func ParseStringWeekdayToTimeWeekday(dayStr string) (time.Weekday, error) {
 	switch strings.ToLower(dayStr) {
-	case "monday":
+	case "monday", "mon":
 		return time.Monday, nil
-	case "tuesday":
+	case "tuesday", "tue":
 		return time.Tuesday, nil
-	case "wednesday":
+	case "wednesday", "wed":
 		return time.Wednesday, nil
-	case "thursday":
+	case "thursday", "thu":
 		return time.Thursday, nil
-	case "friday":
+	case "friday", "fri":
 		return time.Friday, nil
-	case "saturday":
+	case "saturday", "sat":
 		return time.Saturday, nil
-	case "sunday":
+	case "sunday", "sun":
 		return time.Sunday, nil
 	default:
-		return time.Sunday, fmt.Errorf("invalid weekday: %s", dayStr)
+		return time.Weekday(-1), fmt.Errorf("invalid weekday: %s", dayStr)
 	}
 }
 

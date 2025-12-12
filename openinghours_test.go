@@ -577,10 +577,9 @@ func TestParseStringWeekdayToTimeWeekday(t *testing.T) {
 		{"sunday", 0, ""},
 		{"Monday", 1, ""},
 		{"TUESDAY", 2, ""},
-		{"friDAY", 5, ""},
-		{"", 0, "invalid weekday"},
-		{"funday", 0, "invalid weekday"},
-		{"mon", 0, "invalid weekday"},
+		{"fri", 5, ""},
+		{"", -1, "invalid weekday"},
+		{"funday", -1, "invalid weekday"},
 	}
 
 	for _, tt := range tests {
