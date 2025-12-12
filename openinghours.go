@@ -5,7 +5,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // OpeningHours contains an opening and closing times within a given week. The
@@ -266,25 +265,25 @@ func GetOCPIOpeningTimes(ohs []OpeningHours) OCPIOpeningTimes {
 }
 
 // ParseStringWeekdayToTimeWeekday converts a string representation of a weekday
-// (e.g., "monday", "tuesday") to the corresponding time.Weekday value.
-func ParseStringWeekdayToTimeWeekday(dayStr string) (time.Weekday, error) {
+// (e.g., "monday", "tuesday") to the corresponding int value.
+func ParseStringWeekdayToTimeWeekday(dayStr string) (int, error) {
 	switch strings.ToLower(dayStr) {
 	case "monday", "mon":
-		return time.Monday, nil
+		return 1, nil
 	case "tuesday", "tue":
-		return time.Tuesday, nil
+		return 2, nil
 	case "wednesday", "wed":
-		return time.Wednesday, nil
+		return 3, nil
 	case "thursday", "thu":
-		return time.Thursday, nil
+		return 4, nil
 	case "friday", "fri":
-		return time.Friday, nil
+		return 5, nil
 	case "saturday", "sat":
-		return time.Saturday, nil
+		return 6, nil
 	case "sunday", "sun":
-		return time.Sunday, nil
+		return 7, nil
 	default:
-		return time.Weekday(-1), fmt.Errorf("invalid weekday: %s", dayStr)
+		return 0, fmt.Errorf("invalid weekday: %s", dayStr)
 	}
 }
 
