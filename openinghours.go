@@ -79,6 +79,7 @@ func (oh OpeningHours) String() string {
 	return fmt.Sprintf("%s/%s", open, close)
 }
 
+// OpeningHoursSliceToString converts a slice of OpeningHours into a single string representation like "W1T08:00:00/W1T16:00:00,W2T06:00:00/W2T20:00:00".
 func OpeningHoursSliceToString(ohs []OpeningHours) string {
 	openingHoursStr := make([]string, len(ohs))
 	for i, openingHours := range ohs {
